@@ -1,0 +1,166 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import html2canvas from "html2canvas";
+import { api } from "../services/api.js";
+import VerseCard from "../components/VerseCard.jsx";
+
+const initialCategories = [
+  { id: "bomdia", label: "🌅 Bom Dia" },
+  { id: "boanoite", label: "🌙 Boa Noite" },
+  { id: "fe", label: "🙏 Fé" },
+  { id: "amor", label: "❤️ Amor" },
+  { id: "paz", label: "🕊️ Paz" },
+  { id: "familia", label: "👨‍👩‍👧 Família" },
+  { id: "gratidao", label: "✨ Gratidão" },
+  { id: "forca", label: "💪 Força" },
+];
+
+export default function DashboardPage() {
+  const [categories, setCategories] = useState(initialCategories);
+  const [category, setCategory] = useState("bomdia");
+  const [card, setCard] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const cardRef = useRef(null);
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("palavraUser") || "{}");
+
+  useEffect(() => {
+    api
+      .getCategories()
+      .then(setCategories)
+      .catch(() => {});
+    chooseCategory("bomdia");
+  }, []);
+
+  async function chooseCategory(id) {
+    setCategory(id);
+    setLoading(true);
+    try {
+      setCard(await api.getPremiumCard(id));
+    } catch (error) {
+      if (error.message.includes("Sessão")) logout();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function downloadCard() {
+    if (!cardRef.current) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2.5,
+        useCORS: true,
+        backgroundColor: null,
+      });
+      const link = document.createElement("a");
+      link.download = `palavra-do-dia-${category}-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("Erro ao baixar imagem:", err);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  function copyVerseText() {
+    if (!card) return;
+    const textToCopy = `“${card.text}” — ${card.reference}\n\n✨ Compartilhado via Palavra do Dia`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
+  function logout() {
+    localStorage.removeItem("palavraToken");
+    localStorage.removeItem("palavraUser");
+    navigate("/");
+  }
+
+  return (
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <div className="header-container">
+          <div className="brand-logo">
+            <span className="logo-spark">✨</span>
+            <span className="logo-title">Palavra do Dia</span>
+            <span className="premium-badge">
+              {user.role === "admin" ? "ADMINISTRADOR" : "ACESSO COMPLETO"}
+            </span>
+          </div>
+
+          <div className="user-profile">
+            <span className="user-name">Olá, {user.name || "Usuário"}</span>
+            <button className="logout-btn" onClick={logout}>
+              Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="dashboard-main">
+        <div className="dashboard-hero">
+          <span className="mini-badge">PAINEL DE CRIAÇÃO</span>
+          <h1>Qual mensagem você deseja criar agora?</h1>
+          <p>Escolha um tema abaixo. As imagens e versículos são gerados sem repetição.</p>
+        </div>
+
+        {/* Seletor de Categorias */}
+        <div className="categories-slider dashboard-categories">
+          {categories.map((item) => (
+            <button
+              className={`category-pill ${category === item.id ? "active" : ""}`}
+              key={item.id}
+              onClick={() => chooseCategory(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Área do Cartão */}
+        <div className="dashboard-card-wrap">
+          {loading ? (
+            <div className="card-skeleton">
+              <div className="spinner"></div>
+              <p>Preparando seu versículo e imagem HD...</p>
+            </div>
+          ) : (
+            <>
+              <VerseCard card={card} ref={cardRef} />
+
+              <div className="dashboard-actions">
+                <button
+                  className="main-cta-btn download-btn"
+                  onClick={downloadCard}
+                  disabled={downloading}
+                >
+                  {downloading ? "Salvando imagem..." : "⬇ Baixar Imagem em Alta Definição (PNG)"}
+                </button>
+
+                <div className="secondary-actions-row">
+                  <button
+                    className="action-btn secondary"
+                    onClick={() => chooseCategory(category)}
+                  >
+                    🔄 Outra Mensagem / Foto
+                  </button>
+                  <button
+                    className={`action-btn outline ${copied ? "copied" : ""}`}
+                    onClick={copyVerseText}
+                  >
+                    {copied ? "✓ Copiado!" : "📋 Copiar Texto"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
