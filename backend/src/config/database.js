@@ -8,9 +8,11 @@ if (!cached) {
 }
 
 export async function connectDatabase() {
-  const mongoUri =
-    process.env.MONGODB_URI ||
-    "mongodb+srv://luanpope11_db_user:senha123@livraria.t6tckmi.mongodb.net/versiculo";
+  const mongoUri = process.env.MONGODB_URI;
+
+  if (!mongoUri) {
+    throw new Error("A variável de ambiente MONGODB_URI não foi definida no .env ou na Vercel.");
+  }
 
   if (cached.conn) {
     return cached.conn;
