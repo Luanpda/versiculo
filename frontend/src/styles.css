@@ -1235,3 +1235,127 @@ a {
     flex-direction: column;
   }
 }
+
+/* ==========================================================================
+   HEADER RIGHT & LANGUAGE SELECTOR
+   ========================================================================== */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.auth-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.auth-header-row .auth-brand {
+  margin-bottom: 0;
+}
+
+.language-selector-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.lang-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.lang-trigger-btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--gold-border);
+  transform: translateY(-1px);
+}
+
+.lang-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.lang-code {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+}
+
+.lang-caret {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+
+.lang-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 155px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.lang-option:hover {
+  background: var(--bg-subtle);
+  color: var(--gold-hover);
+}
+
+.lang-option.active {
+  background: var(--gold-light);
+  color: var(--gold-hover);
+  font-weight: 700;
+}
+
+.lang-option .lang-check {
+  margin-left: auto;
+  color: var(--gold-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+

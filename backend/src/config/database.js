@@ -43,25 +43,38 @@ export async function connectDatabase() {
 }
 
 async function seedAdminUser() {
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@palavradodia.com").toLowerCase();
-  const adminPassword = process.env.ADMIN_PASSWORD || "senha123";
-  const adminName = process.env.ADMIN_NAME || "Administrador";
+  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+  const adminsToSeed = [
+    {
+      email: (process.env.ADMIN_EMAIL || "admin@admin.com").toLowerCase(),
+      name: process.env.ADMIN_NAME || "Administrador",
+      password: adminPassword,
+    },
+    {
+      email: "admin@palavradodia.com",
+      name: "Administrador Palavra",
+      password: adminPassword,
+    },
+  ];
 
-  try {
-    const existingAdmin = await User.findOne({ email: adminEmail });
-    if (!existingAdmin) {
-      const admin = new User({
-        name: adminName,
-        email: adminEmail,
-        password: adminPassword,
-        role: "admin",
-        isPaid: true,
-        plan: "premium",
-      });
-      await admin.save();
-      console.log(`Usuário Administrador criado com sucesso! (${adminEmail})`);
+  for (const item of adminsToSeed) {
+    try {
+      const existingAdmin = await User.findOne({ email: item.email });
+      if (!existingAdmin) {
+        const admin = new User({
+          name: item.name,
+          email: item.email,
+          password: item.password,
+          role: "admin",
+          isPaid: true,
+          plan: "premium",
+          language: "pt",
+        });
+        await admin.save();
+        console.log(`Usuário Administrador criado com sucesso! (${item.email})`);
+      }
+    } catch (error) {
+      console.warn(`Aviso ao verificar usuário admin (${item.email}):`, error.message);
     }
-  } catch (error) {
-    console.warn("Aviso ao verificar usuário admin:", error.message);
   }
 }

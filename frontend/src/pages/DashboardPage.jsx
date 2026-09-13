@@ -3,20 +3,11 @@ import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import { api } from "../services/api.js";
 import VerseCard from "../components/VerseCard.jsx";
-
-const initialCategories = [
-  { id: "bomdia", label: "🌅 Bom Dia" },
-  { id: "boanoite", label: "🌙 Boa Noite" },
-  { id: "fe", label: "🙏 Fé" },
-  { id: "amor", label: "❤️ Amor" },
-  { id: "paz", label: "🕊️ Paz" },
-  { id: "familia", label: "👨‍👩‍👧 Família" },
-  { id: "gratidao", label: "✨ Gratidão" },
-  { id: "forca", label: "💪 Força" },
-];
+import { useLanguage, LanguageSelector } from "../context/LanguageContext.jsx";
 
 export default function DashboardPage() {
-  const [categories, setCategories] = useState(initialCategories);
+  const { lang, t } = useLanguage();
+  const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState("bomdia");
   const [card, setCard] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -27,20 +18,37 @@ export default function DashboardPage() {
   const user = JSON.parse(localStorage.getItem("palavraUser") || "{}");
 
   useEffect(() => {
-    api
-      .getCategories()
-      .then(setCategories)
+    let isMounted = true;
+    api.getCategories(lang)
+      .then((cats) => {
+        if (isMounted) setCategories(cats);
+      })
       .catch(() => {});
-    chooseCategory("bomdia");
-  }, []);
+
+    setLoading(true);
+    api.getPremiumCard(category, lang)
+      .then((newCard) => {
+        if (isMounted) setCard(newCard);
+      })
+      .catch((error) => {
+        if (error.message.includes("Sessão") || error.message.includes("login")) logout();
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [lang]);
 
   async function chooseCategory(id) {
     setCategory(id);
     setLoading(true);
     try {
-      setCard(await api.getPremiumCard(id));
+      setCard(await api.getPremiumCard(id, lang));
     } catch (error) {
-      if (error.message.includes("Sessão")) logout();
+      if (error.message.includes("Sessão") || error.message.includes("login")) logout();
     } finally {
       setLoading(false);
     }
@@ -56,7 +64,8 @@ export default function DashboardPage() {
         backgroundColor: null,
       });
       const link = document.createElement("a");
-      link.download = `palavra-do-dia-${category}-${Date.now()}.png`;
+      const prefix = t.meta.filePrefix || "palavra-do-dia";
+      link.download = `${prefix}-${category}-${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch (err) {
@@ -68,7 +77,7 @@ export default function DashboardPage() {
 
   function copyVerseText() {
     if (!card) return;
-    const textToCopy = `“${card.text}” — ${card.reference}\n\n✨ Compartilhado via Palavra do Dia`;
+    const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
     navigator.clipboard.writeText(textToCopy).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
@@ -87,16 +96,19 @@ export default function DashboardPage() {
         <div className="header-container">
           <div className="brand-logo">
             <span className="logo-spark">✨</span>
-            <span className="logo-title">Palavra do Dia</span>
+            <span className="logo-title">{t.meta.brandName}</span>
             <span className="premium-badge">
-              {user.role === "admin" ? "ADMINISTRADOR" : "ACESSO COMPLETO"}
+              {user.role === "admin" ? t.nav.adminBadge : t.nav.premiumBadge}
             </span>
           </div>
 
           <div className="user-profile">
-            <span className="user-name">Olá, {user.name || "Usuário"}</span>
+            <LanguageSelector />
+            <span className="user-name">
+              {t.nav.hello}, {user.name || "Usuário"}
+            </span>
             <button className="logout-btn" onClick={logout}>
-              Sair
+              {t.nav.logout}
             </button>
           </div>
         </div>
@@ -104,9 +116,9 @@ export default function DashboardPage() {
 
       <main className="dashboard-main">
         <div className="dashboard-hero">
-          <span className="mini-badge">PAINEL DE CRIAÇÃO</span>
-          <h1>Qual mensagem você deseja criar agora?</h1>
-          <p>Escolha um tema abaixo. As imagens e versículos são gerados sem repetição.</p>
+          <span className="mini-badge">{t.dashboard.badge}</span>
+          <h1>{t.dashboard.title}</h1>
+          <p>{t.dashboard.subtitle}</p>
         </div>
 
         {/* Seletor de Categorias */}
@@ -127,7 +139,7 @@ export default function DashboardPage() {
           {loading ? (
             <div className="card-skeleton">
               <div className="spinner"></div>
-              <p>Preparando seu versículo e imagem HD...</p>
+              <p>{t.dashboard.loadingText}</p>
             </div>
           ) : (
             <>
@@ -139,7 +151,7 @@ export default function DashboardPage() {
                   onClick={downloadCard}
                   disabled={downloading}
                 >
-                  {downloading ? "Salvando imagem..." : "⬇ Baixar Imagem em Alta Definição (PNG)"}
+                  {downloading ? t.dashboard.savingBtn : t.dashboard.downloadBtn}
                 </button>
 
                 <div className="secondary-actions-row">
@@ -147,13 +159,13 @@ export default function DashboardPage() {
                     className="action-btn secondary"
                     onClick={() => chooseCategory(category)}
                   >
-                    🔄 Outra Mensagem / Foto
+                    {t.dashboard.anotherBtn}
                   </button>
                   <button
                     className={`action-btn outline ${copied ? "copied" : ""}`}
                     onClick={copyVerseText}
                   >
-                    {copied ? "✓ Copiado!" : "📋 Copiar Texto"}
+                    {copied ? t.dashboard.copiedBtn : t.dashboard.copyBtn}
                   </button>
                 </div>
               </div>

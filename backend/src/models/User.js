@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
       enum: ["free", "premium"],
       default: "free",
     },
+    language: {
+      type: String,
+      enum: ["pt", "es", "en"],
+      default: "pt",
+    },
   },
   {
     timestamps: true,

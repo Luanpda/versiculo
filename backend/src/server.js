@@ -7,6 +7,7 @@ import { connectDatabase } from "./config/database.js";
 import authRoutes from "./routes/auth.js";
 import cardRoutes from "./routes/cards.js";
 import imageRoutes from "./routes/images.js";
+import geoRoutes from "./routes/geo.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -31,12 +32,14 @@ app.use(
 
 // 4. Conexão automática e resiliente com o MongoDB
 app.use(async (_req, _res, next) => {
-  try {
-    await connectDatabase();
-    next();
-  } catch (error) {
-    next(error);
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectDatabase();
+    } catch (error) {
+      console.warn("Aviso MongoDB:", error.message);
+    }
   }
+  next();
 });
 
 // 5. Rate Limiting Geral
@@ -68,6 +71,7 @@ app.get("/api/health", (_request, response) =>
 app.use("/api/auth", authRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/images", imageRoutes);
+app.use("/api/geo", geoRoutes);
 
 // Tratamento global de erros
 app.use((err, _request, response, _next) => {

@@ -2,9 +2,18 @@ const API_URL =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.DEV ? "http://localhost:3001/api" : "/api");
 
+function getActiveLang() {
+  return localStorage.getItem("palavraLang") || "pt";
+}
+
 async function request(path, options = {}) {
+  const lang = getActiveLang();
   const response = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: {
+      "Content-Type": "application/json",
+      "x-user-lang": lang,
+      ...options.headers,
+    },
     ...options,
   });
   const data = await response.json();
@@ -14,16 +23,33 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  getCategories: () => request("/cards/categories"),
-  getRandomCard: (category) => request(`/cards/random?category=${category}`),
-  getPremiumCard: (category) =>
-    request(`/cards/premium/random?category=${category}`, {
+  getCategories: (lang = getActiveLang()) =>
+    request(`/cards/categories?lang=${encodeURIComponent(lang)}`),
+  getRandomCard: (category, lang = getActiveLang()) =>
+    request(
+      `/cards/random?category=${encodeURIComponent(category)}&lang=${encodeURIComponent(lang)}`
+    ),
+  getPremiumCard: (category, lang = getActiveLang()) =>
+    request(
+      `/cards/premium/random?category=${encodeURIComponent(category)}&lang=${encodeURIComponent(lang)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("palavraToken")}`,
+        },
+      }
+    ),
+  detectLanguage: () => request("/geo/detect"),
+  updateLanguage: (language) =>
+    request("/auth/language", {
+      method: "PATCH",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("palavraToken")}`,
       },
+      body: JSON.stringify({ language }),
     }),
   login: (body) =>
     request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   register: (body) =>
     request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
 };
+

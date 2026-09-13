@@ -1,6 +1,8 @@
 import { forwardRef } from "react";
+import { useLanguage } from "../context/LanguageContext.jsx";
 
 const VerseCard = forwardRef(function VerseCard({ card }, ref) {
+  const { t } = useLanguage();
   if (!card) return null;
 
   const backgroundImage = card.image?.url
@@ -11,7 +13,7 @@ const VerseCard = forwardRef(function VerseCard({ card }, ref) {
     <div className="card-wrapper">
       <article className="verse-card" ref={ref} style={{ backgroundImage }}>
         <div className="card-ornament-top">
-          <span className="card-tag">{card.categoryTitle || "✨ PALAVRA DO DIA"}</span>
+          <span className="card-tag">{card.categoryTitle || t.meta.watermark}</span>
         </div>
 
         <div className="card-quote-mark">“</div>
@@ -22,17 +24,17 @@ const VerseCard = forwardRef(function VerseCard({ card }, ref) {
         </div>
 
         <div className="card-watermark">
-          <span>✨ Palavra do Dia</span>
+          <span>{t.meta.watermark}</span>
         </div>
       </article>
 
       {card.image && (
         <p className="image-credit">
-          Foto por{" "}
+          {t.meta.photoBy}{" "}
           <a href={card.image.authorUrl} target="_blank" rel="noreferrer">
             {card.image.author}
           </a>{" "}
-          via{" "}
+          {t.meta.via}{" "}
           <a href={card.image.pageUrl} target="_blank" rel="noreferrer">
             {card.image.provider}
           </a>
