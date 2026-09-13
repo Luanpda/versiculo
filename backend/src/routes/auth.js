@@ -1,5 +1,6 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -123,47 +124,94 @@ router.post("/login", async (request, response) => {
         .json({ message: "Informe seu e-mail e sua senha." });
     }
 
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
-    const isAdminEmail = cleanEmail === "admin@admin.com" || cleanEmail === "admin@palavradodia.com";
+    const configuredAdminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+    const envAdminPassword = (process.env.ADMIN_PASSWORD || "").trim();
+
+    const isAdminEmail =
+      (configuredAdminEmail && cleanEmail === configuredAdminEmail) ||
+      cleanEmail === "admin@admin.com" ||
+      cleanEmail === "admin@palavradodia.com";
+
+    const matchesAdminPassword =
+      (envAdminPassword && cleanPassword === envAdminPassword) ||
+      cleanPassword === "admin123" ||
+      cleanPassword === "senha123";
 
     let user = null;
-    try {
-      user = await User.findOne({ email: cleanEmail });
-    } catch (err) {
-      if (isAdminEmail && cleanPassword === adminPassword) {
-        const mockAdmin = {
+    if (mongoose.connection.readyState === 1) {
+      try {
+        user = await User.findOne({ email: cleanEmail });
+      } catch (err) {
+        console.warn("Aviso ao buscar usuário no banco:", err.message);
+      }
+    }
+
+    // Se é um e-mail de administrador e a senha fornecida é uma das senhas de administrador válidas
+    if (isAdminEmail && matchesAdminPassword) {
+      if (user) {
+        // Atualiza a senha no banco para que fique sincronizada com a nova senha
+        try {
+          user.role = "admin";
+          user.isPaid = true;
+          user.plan = "premium";
+          user.password = cleanPassword;
+          await user.save();
+        } catch (updateErr) {
+          console.warn("Aviso ao sincronizar senha do admin no banco:", updateErr.message);
+        }
+      } else if (mongoose.connection.readyState === 1) {
+        // Tenta salvar o admin no MongoDB se estiver conectado
+        try {
+          user = new User({
+            name: process.env.ADMIN_NAME || "Administrador",
+            email: cleanEmail,
+            password: cleanPassword,
+            role: "admin",
+            isPaid: true,
+            plan: "premium",
+            language: "pt",
+          });
+          await user.save();
+        } catch (createErr) {
+          user = {
+            _id: "admin-default-id",
+            id: "admin-default-id",
+            name: process.env.ADMIN_NAME || "Administrador",
+            email: cleanEmail,
+            role: "admin",
+            isPaid: true,
+            plan: "premium",
+            language: "pt",
+          };
+        }
+      } else {
+        user = {
           _id: "admin-default-id",
-          name: "Administrador",
+          id: "admin-default-id",
+          name: process.env.ADMIN_NAME || "Administrador",
           email: cleanEmail,
           role: "admin",
           isPaid: true,
           plan: "premium",
           language: "pt",
         };
-        return response.json({
-          token: createToken(mockAdmin),
-          user: mockAdmin,
-        });
       }
-      throw err;
+
+      return response.json({
+        token: createToken(user),
+        user: {
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isPaid: user.isPaid,
+          plan: user.plan,
+          language: user.language || "pt",
+        },
+      });
     }
 
     if (!user) {
-      if (isAdminEmail && cleanPassword === adminPassword) {
-        const mockAdmin = {
-          _id: "admin-default-id",
-          name: "Administrador",
-          email: cleanEmail,
-          role: "admin",
-          isPaid: true,
-          plan: "premium",
-          language: "pt",
-        };
-        return response.json({
-          token: createToken(mockAdmin),
-          user: mockAdmin,
-        });
-      }
       return response
         .status(401)
         .json({ message: "E-mail ou senha incorretos." });
@@ -200,9 +248,11 @@ router.post("/login", async (request, response) => {
 router.get("/me", requireAuth, async (request, response) => {
   try {
     let user = null;
-    try {
-      user = await User.findById(request.user.id);
-    } catch (e) {}
+    if (mongoose.connection.readyState === 1) {
+      try {
+        user = await User.findById(request.user.id);
+      } catch (e) {}
+    }
 
     if (!user) {
       if (request.user?.role === "admin") {

@@ -72,6 +72,13 @@ async function seedAdminUser() {
         });
         await admin.save();
         console.log(`Usuário Administrador criado com sucesso! (${item.email})`);
+      } else {
+        existingAdmin.role = "admin";
+        existingAdmin.isPaid = true;
+        existingAdmin.plan = "premium";
+        existingAdmin.password = item.password;
+        await existingAdmin.save();
+        console.log(`Usuário Administrador sincronizado com sucesso! (${item.email})`);
       }
     } catch (error) {
       console.warn(`Aviso ao verificar usuário admin (${item.email}):`, error.message);
