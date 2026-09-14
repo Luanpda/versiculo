@@ -15,32 +15,56 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
   const cardRef = useRef(null);
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("palavraUser") || "{}");
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("palavraUser") || "{}"));
 
   useEffect(() => {
     let isMounted = true;
+    let pollInterval;
+
+    function fetchUserProfile() {
+      api.getMe()
+        .then((data) => {
+          if (data && data.user && isMounted) {
+            setUser(data.user);
+            localStorage.setItem("palavraUser", JSON.stringify(data.user));
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Busca ao montar
+    fetchUserProfile();
+
+    // Se o usuário não for pago, verifica a cada 3 segundos se o webhook já chegou
+    if (!user.isPaid) {
+      pollInterval = setInterval(fetchUserProfile, 3000);
+    }
+
     api.getCategories(lang)
       .then((cats) => {
         if (isMounted) setCategories(cats);
       })
       .catch(() => {});
 
-    setLoading(true);
-    api.getPremiumCard(category, lang)
-      .then((newCard) => {
-        if (isMounted) setCard(newCard);
-      })
-      .catch((error) => {
-        if (error.message.includes("Sessão") || error.message.includes("login")) logout();
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+    if (user.isPaid) {
+      setLoading(true);
+      api.getPremiumCard(category, lang)
+        .then((newCard) => {
+          if (isMounted) setCard(newCard);
+        })
+        .catch((error) => {
+          if (error.message.includes("Sessão") || error.message.includes("login")) logout();
+        })
+        .finally(() => {
+          if (isMounted) setLoading(false);
+        });
+    }
 
     return () => {
       isMounted = false;
+      if (pollInterval) clearInterval(pollInterval);
     };
-  }, [lang]);
+  }, [lang, user.isPaid]);
 
   async function chooseCategory(id) {
     setCategory(id);
@@ -134,9 +158,29 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Área do Cartão */}
+        {/* Área do Cartão ou Paywall */}
         <div className="dashboard-card-wrap">
-          {loading ? (
+          {!user.isPaid ? (
+            <div className="paywall-container" style={{ textAlign: "center", padding: "2rem", background: "white", borderRadius: "12px", border: "2px dashed #ccc" }}>
+              <span className="mini-badge" style={{ marginBottom: "1rem" }}>ACESSO PREMIUM NECESSÁRIO</span>
+              <h2 style={{ marginBottom: "1rem", color: "#333" }}>Desbloqueie seu acesso!</h2>
+              <p style={{ marginBottom: "2rem", color: "#666" }}>
+                Você já criou sua conta e está quase lá. Para liberar as categorias, baixar fotos em HD sem limite e gerar imagens, você precisa ativar o seu acesso Premium.
+              </p>
+              <a
+                href={`https://pay.hotmart.com/SEU_LINK_DE_CHECKOUT_AQUI?email=${user.email}`}
+                target="_blank"
+                rel="noreferrer"
+                className="main-cta-btn"
+                style={{ display: "inline-block", textDecoration: "none" }}
+              >
+                Ativar Acesso Premium
+              </a>
+              <p style={{ fontSize: "0.85rem", color: "#999", marginTop: "1rem" }}>
+                Após o pagamento, o seu acesso será liberado automaticamente aqui mesmo!
+              </p>
+            </div>
+          ) : loading ? (
             <div className="card-skeleton">
               <div className="spinner"></div>
               <p>{t.dashboard.loadingText}</p>

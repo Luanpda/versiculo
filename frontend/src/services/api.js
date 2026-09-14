@@ -61,5 +61,11 @@ export const api = {
       },
       body: JSON.stringify({ password }),
     }),
+  getMe: () =>
+    request("/auth/me", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("palavraToken")}`,
+      },
+    }),
 };
 
