@@ -14,14 +14,14 @@ export async function connectDatabase() {
     throw new Error("A variável de ambiente MONGODB_URI não foi definida no .env ou na Vercel.");
   }
 
-  if (cached.conn) {
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
-  if (!cached.promise) {
+  if (!cached.promise || mongoose.connection.readyState !== 1) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
     };
 
     mongoose.set("strictQuery", true);
