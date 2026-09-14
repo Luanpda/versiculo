@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
       required: [true, "A senha é obrigatória"],
       minlength: [6, "A senha deve ter pelo menos 6 caracteres"],
     },
+    passwordSet: {
+      type: Boolean,
+      default: true,
+    },
     role: {
       type: String,
       enum: ["user", "admin"],

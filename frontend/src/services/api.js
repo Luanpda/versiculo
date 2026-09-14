@@ -51,5 +51,15 @@ export const api = {
     request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   register: (body) =>
     request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
+  hotmartAccess: (body) =>
+    request("/hotmart/access", { method: "POST", body: JSON.stringify(body) }),
+  setPassword: (password) =>
+    request("/auth/set-password", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("palavraToken")}`,
+      },
+      body: JSON.stringify({ password }),
+    }),
 };
 

@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.js";
 import cardRoutes from "./routes/cards.js";
 import imageRoutes from "./routes/images.js";
 import geoRoutes from "./routes/geo.js";
+import hotmartRoutes from "./routes/hotmart.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -72,6 +73,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/images", imageRoutes);
 app.use("/api/geo", geoRoutes);
+app.use("/api/hotmart", hotmartRoutes);
 
 // Tratamento global de erros
 app.use((err, _request, response, _next) => {

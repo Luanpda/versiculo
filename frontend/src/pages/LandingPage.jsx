@@ -221,9 +221,20 @@ export default function LandingPage() {
                   <span className="price-frequency">{t.pricing.frequency}</span>
                 </div>
 
-                <Link className="checkout-btn" to="/login">
-                  <span>{t.pricing.cta}</span>
-                </Link>
+                {lang === "pt" ? (
+                  <a
+                    className="checkout-btn"
+                    href="https://pay.hotmart.com/I107609448I?checkoutMode=10"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span>{t.pricing.cta}</span>
+                  </a>
+                ) : (
+                  <Link className="checkout-btn" to="/login">
+                    <span>{t.pricing.cta}</span>
+                  </Link>
+                )}
 
                 <div className="pricing-guarantees">
                   {t.pricing.guarantees.map((g, idx) => (

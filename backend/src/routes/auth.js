@@ -244,6 +244,49 @@ router.post("/login", async (request, response) => {
   }
 });
 
+// Define a senha no primeiro acesso de uma conta criada pela compra Hotmart.
+router.post("/set-password", requireAuth, async (request, response) => {
+  try {
+    const password = request.body?.password;
+
+    if (typeof password !== "string" || password.length < 6 || password.length > 128) {
+      return response
+        .status(400)
+        .json({ message: "A senha deve ter entre 6 e 128 caracteres." });
+    }
+
+    const user = await User.findById(request.user.id);
+    if (!user) {
+      return response.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    if (!user.isPaid) {
+      return response.status(403).json({ message: "Sua conta não possui acesso premium." });
+    }
+
+    user.password = password;
+    user.passwordSet = true;
+    await user.save();
+
+    return response.json({
+      message: "Senha criada com sucesso!",
+      token: createToken(user),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isPaid: user.isPaid,
+        plan: user.plan,
+        language: user.language || "pt",
+      },
+    });
+  } catch (error) {
+    console.error("Erro ao definir senha:", error.message);
+    return response.status(500).json({ message: "Erro interno ao criar sua senha." });
+  }
+});
+
 // Rota para consultar dados do usuário autenticado
 router.get("/me", requireAuth, async (request, response) => {
   try {
