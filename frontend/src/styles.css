@@ -1443,3 +1443,115 @@ a {
  } 
   
  
+/* ==========================================================================
+   LAYOUT VARIATIONS FOR VERSE CARD (NEW AND IMPROVED)
+   ========================================================================== */
+
+/* Classic Layout (Default) */
+.layout-classic .card-content-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+/* Minimal (Polaroid/Magazine) Layout */
+.layout-minimal {
+  background: #fbf9f5; /* Cream background */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 15px 35px rgba(20, 14, 10, 0.15);
+  border: 1px solid #eae2d7;
+  color: #2b231d;
+}
+.minimal-image {
+  width: 100%;
+  height: 280px; /* Takes up top portion */
+  background-size: cover;
+  background-position: center;
+  border-bottom: 3px solid var(--gold-primary);
+}
+.minimal-content {
+  padding: 35px 35px;
+  text-align: left;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.minimal-text {
+  font-family: var(--font-sans);
+  font-size: clamp(18px, 3.5vw, 22px);
+  font-weight: 700;
+  line-height: 1.5;
+  color: #2b231d;
+  margin-bottom: 20px;
+}
+.minimal-reference {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gold-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.minimal-watermark {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #a89a8c;
+  text-transform: uppercase;
+  margin-top: auto;
+  padding-top: 20px;
+  align-self: flex-start;
+}
+
+/* Elegant (Cinematic Frame) Layout */
+.layout-elegant {
+  padding: 15px;
+}
+.elegant-frame {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(216, 153, 71, 0.6); /* Gold frame */
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: var(--radius-md);
+}
+.elegant-content {
+  text-align: center;
+  max-width: 440px;
+}
+.elegant-text {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 4.5vw, 28px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #fdf5ea;
+  margin-bottom: 30px;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+.elegant-reference {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--gold-primary);
+  letter-spacing: 0.05em;
+}
+.elegant-watermark {
+  position: absolute;
+  bottom: 20px;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+
