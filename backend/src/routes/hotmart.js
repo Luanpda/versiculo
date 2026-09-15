@@ -62,7 +62,7 @@ function createToken(user) {
       language: user.language || "pt",
     },
     JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "10y" }
   );
 }
 

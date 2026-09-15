@@ -18,7 +18,7 @@ function createToken(user) {
       language: user.language || "pt",
     },
     process.env.JWT_SECRET || "versiculo_jwt_secret_key_2026_segura",
-    { expiresIn: "7d" }
+    { expiresIn: "10y" }
   );
 }
 
