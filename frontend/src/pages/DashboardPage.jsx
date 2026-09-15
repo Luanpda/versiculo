@@ -168,7 +168,7 @@ export default function DashboardPage() {
                 Você já criou sua conta e está quase lá. Para liberar as categorias, baixar fotos em HD sem limite e gerar imagens, você precisa ativar o seu acesso Premium.
               </p>
               <a
-                href={`https://pay.hotmart.com/SEU_LINK_DE_CHECKOUT_AQUI?email=${user.email}`}
+                href={`https://pay.hotmart.com/I107609448I?checkoutMode=10&email=${user.email}`}
                 target="_blank"
                 rel="noreferrer"
                 className="main-cta-btn"
