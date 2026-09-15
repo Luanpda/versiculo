@@ -17,6 +17,10 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("palavraUser") || "{}"));
 
+  const layouts = ["classic", "minimal", "elegant"];
+  const [selectedLayout, setSelectedLayout] = useState("random");
+  const [currentLayout, setCurrentLayout] = useState("classic");
+
   useEffect(() => {
     let isMounted = true;
     let pollInterval;
@@ -32,10 +36,8 @@ export default function DashboardPage() {
         .catch(() => {});
     }
 
-    // Busca ao montar
     fetchUserProfile();
 
-    // Se o usuário não for pago, verifica a cada 3 segundos se o webhook já chegou
     if (!user.isPaid) {
       pollInterval = setInterval(fetchUserProfile, 3000);
     }
@@ -50,7 +52,10 @@ export default function DashboardPage() {
       setLoading(true);
       api.getPremiumCard(category, lang)
         .then((newCard) => {
-          if (isMounted) setCard(newCard);
+          if (isMounted) {
+            setCard(newCard);
+            setCurrentLayout(selectedLayout === "random" ? layouts[Math.floor(Math.random() * layouts.length)] : selectedLayout);
+          }
         })
         .catch((error) => {
           if (error.message.includes("Sessão") || error.message.includes("login")) logout();
@@ -71,6 +76,7 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       setCard(await api.getPremiumCard(id, lang));
+      setCurrentLayout(selectedLayout === "random" ? layouts[Math.floor(Math.random() * layouts.length)] : selectedLayout);
     } catch (error) {
       if (error.message.includes("Sessão") || error.message.includes("login")) logout();
     } finally {
@@ -145,7 +151,15 @@ export default function DashboardPage() {
           <p>{t.dashboard.subtitle}</p>
         </div>
 
-        {/* Seletor de Categorias */}
+        <div style={{ textAlign: "center", marginBottom: "8px", fontSize: "13px", color: "var(--text-muted)", fontWeight: "600" }}>DESIGN DO CARTÃO</div>
+        <div className="categories-slider" style={{ marginBottom: "24px" }}>
+          <button className={`category-pill ${selectedLayout === "random" ? "active" : ""}`} onClick={() => setSelectedLayout("random")}>🎨 Aleatório</button>
+          <button className={`category-pill ${selectedLayout === "classic" ? "active" : ""}`} onClick={() => setSelectedLayout("classic")}>Clássico</button>
+          <button className={`category-pill ${selectedLayout === "minimal" ? "active" : ""}`} onClick={() => setSelectedLayout("minimal")}>Minimalista</button>
+          <button className={`category-pill ${selectedLayout === "elegant" ? "active" : ""}`} onClick={() => setSelectedLayout("elegant")}>Elegante</button>
+        </div>
+
+        <div style={{ textAlign: "center", marginBottom: "8px", fontSize: "13px", color: "var(--text-muted)", fontWeight: "600" }}>TEMA BÍBLICO</div>
         <div className="categories-slider dashboard-categories">
           {categories.map((item) => (
             <button
@@ -187,7 +201,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              <VerseCard card={card} ref={cardRef} />
+              <VerseCard card={card} ref={cardRef} layout={currentLayout} />
 
               <div className="dashboard-actions">
                 <button
