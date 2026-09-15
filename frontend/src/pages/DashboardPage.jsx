@@ -13,13 +13,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [variation, setVariation] = useState(1);
   const cardRef = useRef(null);
   const navigate = useNavigate();
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("palavraUser") || "{}"));
-
-  const layouts = ["classic", "minimal", "elegant"];
-  const [selectedLayout, setSelectedLayout] = useState("random");
-  const [currentLayout, setCurrentLayout] = useState("classic");
 
   useEffect(() => {
     let isMounted = true;
@@ -54,7 +51,7 @@ export default function DashboardPage() {
         .then((newCard) => {
           if (isMounted) {
             setCard(newCard);
-            setCurrentLayout(selectedLayout === "random" ? layouts[Math.floor(Math.random() * layouts.length)] : selectedLayout);
+            setVariation(Math.floor(Math.random() * 10) + 1);
           }
         })
         .catch((error) => {
@@ -76,7 +73,7 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       setCard(await api.getPremiumCard(id, lang));
-      setCurrentLayout(selectedLayout === "random" ? layouts[Math.floor(Math.random() * layouts.length)] : selectedLayout);
+      setVariation(Math.floor(Math.random() * 10) + 1);
     } catch (error) {
       if (error.message.includes("Sessão") || error.message.includes("login")) logout();
     } finally {
@@ -151,14 +148,6 @@ export default function DashboardPage() {
           <p>{t.dashboard.subtitle}</p>
         </div>
 
-        <div style={{ textAlign: "center", marginBottom: "8px", fontSize: "13px", color: "var(--text-muted)", fontWeight: "600" }}>DESIGN DO CARTÃO</div>
-        <div className="categories-slider" style={{ marginBottom: "24px" }}>
-          <button className={`category-pill ${selectedLayout === "random" ? "active" : ""}`} onClick={() => setSelectedLayout("random")}>🎨 Aleatório</button>
-          <button className={`category-pill ${selectedLayout === "classic" ? "active" : ""}`} onClick={() => setSelectedLayout("classic")}>Clássico</button>
-          <button className={`category-pill ${selectedLayout === "minimal" ? "active" : ""}`} onClick={() => setSelectedLayout("minimal")}>Minimalista</button>
-          <button className={`category-pill ${selectedLayout === "elegant" ? "active" : ""}`} onClick={() => setSelectedLayout("elegant")}>Elegante</button>
-        </div>
-
         <div style={{ textAlign: "center", marginBottom: "8px", fontSize: "13px", color: "var(--text-muted)", fontWeight: "600" }}>TEMA BÍBLICO</div>
         <div className="categories-slider dashboard-categories">
           {categories.map((item) => (
@@ -201,7 +190,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              <VerseCard card={card} ref={cardRef} layout={currentLayout} />
+              <VerseCard card={card} ref={cardRef} variation={variation} />
 
               <div className="dashboard-actions">
                 <button

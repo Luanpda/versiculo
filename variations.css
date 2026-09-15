@@ -1,0 +1,73 @@
+﻿
+/* ==========================================================================
+   LAYOUT VARIATIONS FOR VERSE CARD (10 Subtle Variations)
+   ========================================================================== */
+.card-content-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* Base resets */
+.var-1 .card-quote-mark, .var-2 .card-quote-mark, .var-3 .card-quote-mark,
+.var-4 .card-quote-mark, .var-5 .card-quote-mark, .var-6 .card-quote-mark,
+.var-7 .card-quote-mark, .var-8 .card-quote-mark, .var-9 .card-quote-mark,
+.var-10 .card-quote-mark {
+  display: block;
+}
+
+/* Var 1: Classic Original (Center, Serif, Pill) */
+.var-1 .card-verse-text { font-family: var(--font-serif); text-align: center; }
+
+/* Var 2: Modern Left (Left, Sans, Simple Ref, No Quote) */
+.var-2 .card-quote-mark { display: none; }
+.var-2 .card-content-area { align-items: flex-start; text-align: left; }
+.var-2 .card-verse-text { font-family: var(--font-sans); }
+.var-2 .card-reference-pill { background: transparent; border: none; padding: 0; font-family: var(--font-sans); color: var(--gold-primary); font-size: 16px; }
+.var-2 .card-reference-pill span::before { content: "— "; }
+
+/* Var 3: Editorial Center (Center, Sans, Simple Italic Ref) */
+.var-3 .card-quote-mark { font-size: 40px; margin-bottom: -10px; color: var(--gold-primary); }
+.var-3 .card-verse-text { font-family: var(--font-sans); font-weight: 300; text-align: center; }
+.var-3 .card-reference-pill { background: transparent; border: none; font-style: italic; color: #e8cfad; }
+
+/* Var 4: Poetic Right Ref (Left text, Right ref, Serif) */
+.var-4 .card-content-area { align-items: flex-start; text-align: left; }
+.var-4 .card-reference-area { align-self: flex-end; }
+.var-4 .card-reference-pill { border-radius: 4px; background: rgba(201, 138, 59, 0.25); border-color: rgba(201, 138, 59, 0.5); }
+
+/* Var 5: Cinematic (Center, Sans, No Quote, Wide Spacing) */
+.var-5 .card-quote-mark { display: none; }
+.var-5 .card-verse-text { font-family: var(--font-sans); letter-spacing: 0.03em; line-height: 1.7; text-align: center; }
+.var-5 .card-reference-pill { text-transform: uppercase; letter-spacing: 0.15em; font-size: 12px; }
+
+/* Var 6: Minimalist Left (Left, Serif, Left Accent Border) */
+.var-6 .card-quote-mark { display: none; }
+.var-6 .card-content-area { align-items: flex-start; text-align: left; border-left: 3px solid var(--gold-primary); padding-left: 24px; margin-left: 20px; }
+.var-6 .card-reference-pill { background: transparent; border: none; padding: 0; color: #fff; opacity: 0.8; }
+
+/* Var 7: Bold Center (Center, Sans Bold, Gold Quote) */
+.var-7 .card-quote-mark { color: var(--gold-primary); font-size: 65px; }
+.var-7 .card-verse-text { font-family: var(--font-sans); font-weight: 700; font-style: normal; text-align: center; }
+.var-7 .card-reference-pill { background: var(--gold-primary); border-color: var(--gold-hover); color: #2b231d; }
+
+/* Var 8: Classic Warm (Center, Serif, Thin Divider above Ref) */
+.var-8 .card-verse-text { text-align: center; }
+.var-8 .card-reference-area { border-top: 1px solid rgba(255, 216, 153, 0.4); padding-top: 15px; margin-top: 20px; }
+.var-8 .card-reference-pill { background: transparent; border: none; padding: 0; }
+
+/* Var 9: Elegant Sans (Center, Sans, Small Quote) */
+.var-9 .card-quote-mark { font-size: 30px; opacity: 0.5; }
+.var-9 .card-verse-text { font-family: var(--font-sans); font-weight: 400; font-style: italic; text-align: center; }
+.var-9 .card-reference-pill { border-radius: 0; border: 1px solid rgba(255,255,255,0.2); }
+
+/* Var 10: Book Style (Left, Serif, Indented, Simple Ref) */
+.var-10 .card-quote-mark { display: none; }
+.var-10 .card-content-area { align-items: flex-start; text-align: left; }
+.var-10 .card-verse-text { text-indent: 40px; }
+.var-10 .card-reference-pill { background: transparent; border: none; padding: 0; font-family: var(--font-serif); font-style: italic; opacity: 0.9; }
+.var-10 .card-reference-pill span::before { content: "— "; }
+
