@@ -851,6 +851,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  object-fit: cover;
 }
 
 .testimonial-author strong {
@@ -1441,5 +1442,6 @@ a {
      b o t t o m :   2 5 p x ; 
      o p a c i t y :   0 . 7 ; 
  } 
-  
+ 
+ 
  

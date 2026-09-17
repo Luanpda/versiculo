@@ -264,7 +264,7 @@ export default function LandingPage() {
                 <div className="testimonial-stars">★★★★★</div>
                 <p>{item.text}</p>
                 <div className="testimonial-author">
-                  <div className="author-avatar">{item.avatar}</div>
+                  <img className="author-avatar" src={item.avatar} alt={item.author} />
                   <div>
                     <strong>{item.author}</strong>
                     <span>{item.location}</span>
