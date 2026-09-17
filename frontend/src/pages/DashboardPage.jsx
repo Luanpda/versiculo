@@ -111,14 +111,56 @@ export default function DashboardPage() {
     });
   }
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  function shareWhatsApp() {
+    if (!card) return;
+    const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToCopy)}`;
+    window.open(url, '_blank');
+  }
+
   function logout() {
     localStorage.removeItem("palavraToken");
     localStorage.removeItem("palavraUser");
     navigate("/");
   }
 
+  const [showHotmartModal, setShowHotmartModal] = useState(false);
+
   return (
     <div className="dashboard-page">
+      {showHotmartModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', padding: '30px', borderRadius: '16px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ fontSize: '22px', marginBottom: '12px', color: '#241a13', fontWeight: '800' }}>Aviso Importante!</h3>
+            <p style={{ fontSize: '15px', color: '#666', marginBottom: '12px', lineHeight: '1.5' }}>
+              Para que seu acesso Premium seja liberado automaticamente, <strong>você deve utilizar o mesmo e-mail</strong> na Hotmart que usou para criar esta conta:
+            </p>
+            <div style={{ background: '#f5f5f5', padding: '10px', borderRadius: '8px', marginBottom: '24px', fontWeight: '700', color: '#333' }}>
+              {user?.email}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <a
+                href={`https://pay.hotmart.com/I107609448I?checkoutMode=10&email=${user?.email || ''}`}
+                target="_blank"
+                rel="noreferrer"
+                className="main-cta-btn"
+                style={{ textDecoration: "none", width: '100%', display: 'block' }}
+                onClick={() => setShowHotmartModal(false)}
+              >
+                Ir para o Pagamento
+              </a>
+              <button 
+                onClick={() => setShowHotmartModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#888', fontWeight: '600', padding: '10px', cursor: 'pointer' }}
+              >
+                Voltar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="dashboard-header">
         <div className="header-container">
           <div className="brand-logo">
@@ -170,15 +212,13 @@ export default function DashboardPage() {
               <p style={{ marginBottom: "2rem", color: "#666" }}>
                 Você já criou sua conta e está quase lá. Para liberar as categorias, baixar fotos em HD sem limite e gerar imagens, você precisa ativar o seu acesso Premium.
               </p>
-              <a
-                href={`https://pay.hotmart.com/I107609448I?checkoutMode=10&email=${user.email}`}
-                target="_blank"
-                rel="noreferrer"
+              <button
                 className="main-cta-btn"
-                style={{ display: "inline-block", textDecoration: "none" }}
+                style={{ display: "inline-block", textDecoration: "none", cursor: "pointer", border: "none" }}
+                onClick={() => setShowHotmartModal(true)}
               >
                 Ativar Acesso Premium
-              </a>
+              </button>
               <p style={{ fontSize: "0.85rem", color: "#999", marginTop: "1rem" }}>
                 Após o pagamento, o seu acesso será liberado automaticamente aqui mesmo!
               </p>
@@ -214,6 +254,15 @@ export default function DashboardPage() {
                   >
                     {copied ? t.dashboard.copiedBtn : t.dashboard.copyBtn}
                   </button>
+                  {isMobile && (
+                    <button
+                      className="action-btn outline"
+                      style={{ borderColor: '#25D366', color: '#25D366' }}
+                      onClick={shareWhatsApp}
+                    >
+                      WhatsApp
+                    </button>
+                  )}
                 </div>
               </div>
             </>

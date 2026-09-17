@@ -1,11 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { api } from "../services/api.js";
 import { useLanguage, LanguageSelector } from "../context/LanguageContext.jsx";
 
 export default function LoginPage() {
   const { lang, changeLanguage, t } = useLanguage();
-  const [isRegistering, setIsRegistering] = useState(false);
+  const location = useLocation();
+  const [isRegistering, setIsRegistering] = useState(location.search.includes("register=true"));
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,77 +48,77 @@ export default function LoginPage() {
           <LanguageSelector className="auth-lang-selector" />
         </div>
 
-        <section className="auth-card">
-          <span className="mini-badge">{t.auth.restrictedBadge}</span>
-          <h1>{isRegistering ? t.auth.registerTitle : t.auth.loginTitle}</h1>
-          <p className="auth-sub">
-            {isRegistering ? t.auth.registerSub : t.auth.loginSub}
-          </p>
+          <section className="auth-card">
+            <span className="mini-badge">{t.auth.restrictedBadge}</span>
+            <h1>{isRegistering ? t.auth.registerTitle : t.auth.loginTitle}</h1>
+            <p className="auth-sub">
+              {isRegistering ? t.auth.registerSub : t.auth.loginSub}
+            </p>
 
-          <form onSubmit={submit} className="auth-form">
-            {isRegistering && (
+            <form onSubmit={submit} className="auth-form">
+              {isRegistering && (
+                <div className="input-group">
+                  <label>{t.auth.nameLabel}</label>
+                  <input
+                    required
+                    placeholder={t.auth.namePlaceholder}
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  />
+                </div>
+              )}
+
               <div className="input-group">
-                <label>{t.auth.nameLabel}</label>
+                <label>{t.auth.emailLabel}</label>
                 <input
                   required
-                  placeholder={t.auth.namePlaceholder}
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  type="email"
+                  placeholder={t.auth.emailPlaceholder}
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </div>
-            )}
 
-            <div className="input-group">
-              <label>{t.auth.emailLabel}</label>
-              <input
-                required
-                type="email"
-                placeholder={t.auth.emailPlaceholder}
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
+              <div className="input-group">
+                <label>{t.auth.passwordLabel}</label>
+                <input
+                  required
+                  minLength="6"
+                  type="password"
+                  placeholder={t.auth.passwordPlaceholder}
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
+              </div>
+
+              {error && <div className="auth-error">{error}</div>}
+
+              <button className="main-cta-btn auth-submit-btn" disabled={loading}>
+                {loading
+                  ? t.auth.processing
+                  : isRegistering
+                  ? t.auth.registerBtn
+                  : t.auth.loginBtn}
+              </button>
+            </form>
+
+            <div className="auth-toggle">
+              <button
+                type="button"
+                className="toggle-link"
+                onClick={() => {
+                  setIsRegistering(!isRegistering);
+                  setError("");
+                }}
+              >
+                {isRegistering ? t.auth.toLogin : t.auth.toRegister}
+              </button>
             </div>
 
-            <div className="input-group">
-              <label>{t.auth.passwordLabel}</label>
-              <input
-                required
-                minLength="6"
-                type="password"
-                placeholder={t.auth.passwordPlaceholder}
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
+            <div className="auth-footer-back">
+              <Link to="/">{t.nav.backHome}</Link>
             </div>
-
-            {error && <div className="auth-error">{error}</div>}
-
-            <button className="main-cta-btn auth-submit-btn" disabled={loading}>
-              {loading
-                ? t.auth.processing
-                : isRegistering
-                ? t.auth.registerBtn
-                : t.auth.loginBtn}
-            </button>
-          </form>
-
-          <div className="auth-toggle">
-            <button
-              type="button"
-              className="toggle-link"
-              onClick={() => {
-                setIsRegistering(!isRegistering);
-                setError("");
-              }}
-            >
-              {isRegistering ? t.auth.toLogin : t.auth.toRegister}
-            </button>
-          </div>
-
-          <div className="auth-footer-back">
-            <Link to="/">{t.nav.backHome}</Link>
-          </div>
-        </section>
+          </section>
       </div>
     </div>
   );

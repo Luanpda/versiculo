@@ -36,11 +36,19 @@ export default function LandingPage() {
     };
   }, [lang]);
 
+  const [generations, setGenerations] = useState(0);
+
   async function chooseCategory(id) {
+    if (generations >= 1) {
+      alert(lang === 'pt' ? 'Você atingiu o limite da versão gratuita. Adquira o Premium para gerar quantas vezes quiser!' : 'You have reached the free version limit. Get Premium to generate as many times as you want!');
+      window.location.hash = "#comprar";
+      return;
+    }
     setCategory(id);
     setLoading(true);
     try {
       setCard(await api.getRandomCard(id, lang));
+      setGenerations(prev => prev + 1);
     } finally {
       setLoading(false);
     }
@@ -53,6 +61,15 @@ export default function LandingPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
+  }
+
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  function shareWhatsApp() {
+    if (!card) return;
+    const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToCopy)}`;
+    window.open(url, '_blank');
   }
 
   return (
@@ -147,6 +164,15 @@ export default function LandingPage() {
                 >
                   {copied ? t.generator.copiedBtn : t.generator.copyBtn}
                 </button>
+                {isMobile && (
+                  <button
+                    className="action-btn outline"
+                    style={{ borderColor: '#25D366', color: '#25D366' }}
+                    onClick={shareWhatsApp}
+                  >
+                    WhatsApp
+                  </button>
+                )}
               </div>
             )}
 
@@ -221,20 +247,9 @@ export default function LandingPage() {
                   <span className="price-frequency">{t.pricing.frequency}</span>
                 </div>
 
-                {lang === "pt" ? (
-                  <a
-                    className="checkout-btn"
-                    href="https://pay.hotmart.com/I107609448I?checkoutMode=10"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <span>{t.pricing.cta}</span>
-                  </a>
-                ) : (
-                  <Link className="checkout-btn" to="/login">
-                    <span>{t.pricing.cta}</span>
-                  </Link>
-                )}
+                <Link className="checkout-btn" to="/login?register=true">
+                  <span>{t.pricing.cta}</span>
+                </Link>
 
                 <div className="pricing-guarantees">
                   {t.pricing.guarantees.map((g, idx) => (

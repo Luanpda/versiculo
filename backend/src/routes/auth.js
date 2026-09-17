@@ -243,8 +243,6 @@ router.post("/login", async (request, response) => {
       .json({ message: "Erro interno no servidor ao processar login." });
   }
 });
-
-// Define a senha no primeiro acesso de uma conta criada pela compra Hotmart.
 router.post("/set-password", requireAuth, async (request, response) => {
   try {
     const password = request.body?.password;
