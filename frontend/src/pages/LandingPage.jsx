@@ -4,6 +4,21 @@ import html2canvas from "html2canvas";
 import { api } from "../services/api.js";
 import VerseCard from "../components/VerseCard.jsx";
 import { useLanguage, LanguageSelector } from "../context/LanguageContext.jsx";
+import { Sun, Moon, Anchor, Heart, Feather, Users, Sparkles, Shield } from "lucide-react";
+
+const CategoryIcon = ({ id }) => {
+  switch (id) {
+    case 'bomdia': return <Sun size={16} />;
+    case 'boanoite': return <Moon size={16} />;
+    case 'fe': return <Anchor size={16} />;
+    case 'amor': return <Heart size={16} />;
+    case 'paz': return <Feather size={16} />;
+    case 'familia': return <Users size={16} />;
+    case 'gratidao': return <Sparkles size={16} />;
+    case 'forca': return <Shield size={16} />;
+    default: return null;
+  }
+};
 
 export default function LandingPage() {
   const { lang, t } = useLanguage();
@@ -209,7 +224,9 @@ export default function LandingPage() {
                   key={item.id}
                   className={`category-pill ${category === item.id ? "active" : ""}`}
                   onClick={() => chooseCategory(item.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
+                  <CategoryIcon id={item.id} />
                   {item.label}
                 </button>
               ))}
