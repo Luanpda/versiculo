@@ -125,13 +125,11 @@ export default function DashboardPage() {
       });
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       const file = new File([blob], 'palavra-do-dia.png', { type: 'image/png' });
-      const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: t.meta.brandName || 'Palavra do Dia',
-          text: textToCopy,
         });
       } else {
         alert(lang === 'pt' ? 'Seu navegador não suporta compartilhamento direto de imagens. A imagem será baixada para você enviar manualmente.' : 'Your browser does not support direct image sharing. The image will be downloaded for you to send manually.');
@@ -141,7 +139,7 @@ export default function DashboardPage() {
         link.href = canvas.toDataURL("image/png");
         link.click();
         
-        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToCopy)}`;
+        const url = `https://api.whatsapp.com/send`;
         window.open(url, '_blank');
       }
     } catch (err) {
