@@ -97,7 +97,7 @@ export const translations = {
       discountTag: "DESCONTO DE 50% HOJE",
       oldPrice: "De R$ 59,90",
       currency: "R$",
-      amount: "29",
+      amount: "20",
       cents: ",90",
       frequency: "Pagamento único • Sem assinaturas",
       cta: "🔓 DESBLOQUEAR MEU ACESSO AGORA",

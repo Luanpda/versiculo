@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import html2canvas from "html2canvas";
 import { api } from "../services/api.js";
 import VerseCard from "../components/VerseCard.jsx";
 import { useLanguage, LanguageSelector } from "../context/LanguageContext.jsx";
@@ -37,11 +38,14 @@ export default function LandingPage() {
   }, [lang]);
 
   const [generations, setGenerations] = useState(0);
+  const [downloads, setDownloads] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef(null);
 
   async function chooseCategory(id) {
     if (generations >= 1) {
-      alert(lang === 'pt' ? 'Você atingiu o limite da versão gratuita. Adquira o Premium para gerar quantas vezes quiser!' : 'You have reached the free version limit. Get Premium to generate as many times as you want!');
-      window.location.hash = "#comprar";
+      setShowModal(true);
       return;
     }
     setCategory(id);
@@ -54,16 +58,31 @@ export default function LandingPage() {
     }
   }
 
-  function copyVerseText() {
-    if (!card) return;
-    const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    });
+  async function downloadCard() {
+    if (downloads >= 1) {
+      setShowModal(true);
+      return;
+    }
+    if (!cardRef.current) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2.5,
+        useCORS: true,
+        backgroundColor: null,
+      });
+      const link = document.createElement("a");
+      const prefix = t.meta.filePrefix || "palavra-do-dia";
+      link.download = `${prefix}-${category}-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      setDownloads(prev => prev + 1);
+    } catch (err) {
+      console.error("Erro ao baixar imagem:", err);
+    } finally {
+      setDownloading(false);
+    }
   }
-
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   function shareWhatsApp() {
     if (!card) return;
@@ -74,6 +93,35 @@ export default function LandingPage() {
 
   return (
     <div className="page-wrapper">
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', padding: '30px', borderRadius: '16px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ fontSize: '22px', marginBottom: '12px', color: '#241a13', fontWeight: '800' }}>
+              {lang === 'pt' ? 'Limite Atingido' : lang === 'es' ? 'Límite Alcanzado' : 'Limit Reached'}
+            </h3>
+            <p style={{ fontSize: '15px', color: '#666', marginBottom: '24px', lineHeight: '1.5' }}>
+              {lang === 'pt' ? 'Você atingiu o limite da versão gratuita. Crie sua conta para baixar fotos HD sem limites e ter acesso a todas as categorias!' : 
+               lang === 'es' ? 'Has alcanzado el límite de la versión gratuita. ¡Crea tu cuenta para descargar fotos HD sin límites y acceder a todas las categorías!' : 
+               'You have reached the free version limit. Create your account to download unlimited HD photos and access all categories!'}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <Link
+                to="/login?register=true"
+                className="main-cta-btn"
+                style={{ textDecoration: "none", width: '100%', display: 'block' }}
+              >
+                {lang === 'pt' ? 'Criar uma conta para acessar' : lang === 'es' ? 'Crear una cuenta para acceder' : 'Create an account to access'}
+              </Link>
+              <button 
+                onClick={() => setShowModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#888', fontWeight: '600', padding: '10px', cursor: 'pointer' }}
+              >
+                {lang === 'pt' ? 'Voltar' : lang === 'es' ? 'Volver' : 'Back'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header Fixo e Elegante */}
       <header className="site-header">
         <div className="header-container">
@@ -145,26 +193,29 @@ export default function LandingPage() {
                   <p>{t.generator.loadingText}</p>
                 </div>
               ) : (
-                <VerseCard card={card} />
+                <VerseCard card={card} ref={cardRef} />
               )}
             </div>
 
             {/* Ações Rápidas */}
             {card && !loading && (
-              <div className="card-quick-actions">
+              <div className="card-quick-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button
-                  className="action-btn secondary"
-                  onClick={() => chooseCategory(category)}
+                  className="main-cta-btn download-btn"
+                  style={{ width: '100%', border: 'none', cursor: 'pointer' }}
+                  onClick={downloadCard}
+                  disabled={downloading}
                 >
-                  {t.generator.anotherBtn}
+                  {downloading ? (t.dashboard?.savingBtn || 'Salvando...') : (t.dashboard?.downloadBtn || '⬇ Baixar Imagem')}
                 </button>
-                <button
-                  className={`action-btn outline ${copied ? "copied" : ""}`}
-                  onClick={copyVerseText}
-                >
-                  {copied ? t.generator.copiedBtn : t.generator.copyBtn}
-                </button>
-                {isMobile && (
+
+                <div className="secondary-actions-row" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <button
+                    className="action-btn secondary"
+                    onClick={() => chooseCategory(category)}
+                  >
+                    {t.generator.anotherBtn}
+                  </button>
                   <button
                     className="action-btn outline"
                     style={{ borderColor: '#25D366', color: '#25D366' }}
@@ -172,7 +223,7 @@ export default function LandingPage() {
                   >
                     WhatsApp
                   </button>
-                )}
+                </div>
               </div>
             )}
 
