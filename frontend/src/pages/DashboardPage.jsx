@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [variation, setVariation] = useState(1);
   const cardRef = useRef(null);
   const navigate = useNavigate();
@@ -113,11 +114,41 @@ export default function DashboardPage() {
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  function shareWhatsApp() {
-    if (!card) return;
-    const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToCopy)}`;
-    window.open(url, '_blank');
+  async function shareWhatsApp() {
+    if (!cardRef.current) return;
+    setSharing(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2.5,
+        useCORS: true,
+        backgroundColor: null,
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], 'palavra-do-dia.png', { type: 'image/png' });
+      const textToCopy = `“${card.text}” — ${card.reference}\n\n${t.meta.copyFooter}`;
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: t.meta.brandName || 'Palavra do Dia',
+          text: textToCopy,
+        });
+      } else {
+        alert(lang === 'pt' ? 'Seu navegador não suporta compartilhamento direto de imagens. A imagem será baixada para você enviar manualmente.' : 'Your browser does not support direct image sharing. The image will be downloaded for you to send manually.');
+        const link = document.createElement("a");
+        const prefix = t.meta.filePrefix || "palavra-do-dia";
+        link.download = `${prefix}-${category}-${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(textToCopy)}`;
+        window.open(url, '_blank');
+      }
+    } catch (err) {
+      console.error("Erro ao compartilhar imagem:", err);
+    } finally {
+      setSharing(false);
+    }
   }
 
   function logout() {
@@ -254,15 +285,14 @@ export default function DashboardPage() {
                   >
                     {copied ? t.dashboard.copiedBtn : t.dashboard.copyBtn}
                   </button>
-                  {isMobile && (
-                    <button
-                      className="action-btn outline"
-                      style={{ borderColor: '#25D366', color: '#25D366' }}
-                      onClick={shareWhatsApp}
-                    >
-                      WhatsApp
-                    </button>
-                  )}
+                  <button
+                    className="action-btn outline"
+                    style={{ borderColor: '#25D366', color: '#25D366' }}
+                    onClick={shareWhatsApp}
+                    disabled={sharing}
+                  >
+                    {sharing ? 'Compartilhando...' : 'WhatsApp'}
+                  </button>
                 </div>
               </div>
             </>
